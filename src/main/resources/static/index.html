@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Application</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Web Application</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section id="home">
+            <h2>Home</h2>
+            <p>This is the home section of the web application.</p>
+        </section>
+        <section id="about">
+            <h2>About</h2>
+            <p>This section contains information about the web application.</p>
+        </section>
+        <section id="contact">  
+            <h2>Contact</h2>
+            <p>This section provides contact information.</p>
+        </section>
+    </main>
+    
+        <label>Select file to upload:</label>
+        <input type="file" id="file-upload" name="file-upload"/>
+        
+    <footer>
+        <p>&copy; 2024 My Web Application</p>
+    </footer>
+    <script src="app.js"></script>
+    <img src="/image/JediTeam.png" alt="Jedi Team">
+    <script>
+        document.getElementById('file-upload').addEventListener('change', async function() {
+            alert("File selected: " + this.files[0].name);
+            try {
+                const form = new FormData();
+                form.append("fileName", this.files[0].name);
+                form.append('file', this.files[0]);
+                alert("Uploading file: " + this.files[0].name);
+                const response = await fetch("/image", {
+                method: "post",
+                body: form
+                });
+
+                alert(response.status);
+                if(!response.ok) {
+                    throw new Error("Failed to upload file");
+                }
+
+                alert("File uploaded successfully: " + this.files[0].name);
+
+                const result = await response.result;
+                return result;
+            } catch (error) {
+                console.error("Error uploading file:", error);
+            }
+        });
+    </script>
+</body>
+</html>
