@@ -8,18 +8,14 @@ node {
     }
 
     stage('Clean and Compile') {
-        sh 'mvn clean compile'
-    }
-
-    stage('Compile') {
-        sh 'mvn clean package'
+        sh "export PATH=\$PATH:${mavenHome}/bin && mvn clean compile"
     }
 
     stage('Test'){
-        sh 'mvn test'
+        sh "export PATH=\$PATH:${mavenHome}/bin && mvn test"
     }
 
     stage('Package'){
-        sh 'mvn package'
+        sh "export PATH=\$PATH:${mavenHome}/bin && mvn package"
     }
 }
