@@ -1,8 +1,10 @@
 node {
     stage('Check Environment'){
+        def mav = name: myMaven
+        sh 'java --version'
         sh 'git --version'
         sh 'mvn --version'
-        sh 'java --version'
+        
         echo env.BUILD_NUMBER
     }
 
