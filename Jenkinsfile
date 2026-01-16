@@ -1,10 +1,9 @@
 node {
+    def mavenHome = tool 'myMaven' // 'M3' is the name configured in Global Tool Configuration
     stage('Check Environment'){
-        def mav = tool name: 'myMaven'
         sh 'java --version'
         sh 'git --version'
-        sh 'mvn --version'
-        
+        sh "export PATH=\$PATH:${mavenHome}/bin && mvn --version"
         echo env.BUILD_NUMBER
     }
 
