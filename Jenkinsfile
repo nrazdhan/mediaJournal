@@ -1,6 +1,6 @@
 node {
     stage('Check Environment'){
-        def mav = name: myMaven
+        def mav = name: 'myMaven'
         sh 'java --version'
         sh 'git --version'
         sh 'mvn --version'
