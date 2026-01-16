@@ -8,14 +8,17 @@ node {
     }
 
     stage('Clean and Compile') {
+        git branch: 'main', url: 'https://github.com/nrazdhan/mediaJournal.git'
         sh "export PATH=\$PATH:${mavenHome}/bin && mvn clean compile"
     }
 
     stage('Test'){
+        git branch: 'main', url: 'https://github.com/nrazdhan/mediaJournal.git'
         sh "export PATH=\$PATH:${mavenHome}/bin && mvn test"
     }
 
     stage('Package'){
+        git branch: 'main', url: 'https://github.com/nrazdhan/mediaJournal.git'
         sh "export PATH=\$PATH:${mavenHome}/bin && mvn package"
     }
 }
