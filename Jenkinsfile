@@ -25,4 +25,18 @@ node {
     stage('Run static code analysis job'){
         build job: 'helloworldbuild'
     }
+
+    stage('Create docker image') {
+        sh "docker build -t nrazdhan/mediaJournal:latest ."
+    }
+
+    stage('docker-deploy'){
+        withCredentials([usernamePassword(
+            credentialsId: 'my-docker-credentials', 
+            usernameVariable: 'USER',
+            passwordVariable: 'PASS')]){
+                sh 'docker login --username $USER --password $PASS'
+                sh 'docker push nrazdhan/mediaJouranl'
+            }
+    }
 }
