@@ -21,4 +21,8 @@ node {
         git branch: 'main', url: 'https://github.com/nrazdhan/mediaJournal.git'
         sh "export PATH=\$PATH:${mavenHome}/bin && mvn package"
     }
+
+    stage('Run static code analysis job'){
+        build job: helloworldbuild
+    }
 }
