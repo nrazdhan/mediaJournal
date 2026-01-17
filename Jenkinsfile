@@ -23,6 +23,6 @@ node {
     }
 
     stage('Run static code analysis job'){
-        build job: helloworldbuild
+        build job: 'helloworldbuild'
     }
 }
