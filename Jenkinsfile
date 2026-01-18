@@ -36,7 +36,7 @@ node {
             usernameVariable: 'USER',
             passwordVariable: 'PASS')]){
                 sh 'docker login --username $USER --password $PASS'
-                sh 'docker push nrazdhan/mediaJouranl'
+                sh 'docker push nrazdhan/mediajouranl'
             }
     }
 
