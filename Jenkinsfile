@@ -27,7 +27,7 @@ node {
     }
 
     stage('Create docker image') {
-        sh "docker build -t nrazdhan/mediaJournal:latest ."
+        sh "docker build -t nrazdhan/mediajournal:latest ."
     }
 
     stage('docker-deploy'){
@@ -40,5 +40,8 @@ node {
             }
     }
 
-    // docker run -d --privileged --name my_jenkins -p 8080:8080 -p 50000:50000 -v ~/my_jenkins_home_volume:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock
+    // docker run -d --privileged --name my_jenkins_docker_sock_plus_docker_client2 -p 8080:8080 -p 50000:50000 -v ~/my_jenkins_home_volume:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker jenkins/jenkins:lts
+
+    //RUN jenkins local installation but use docker-jenkins created my_jenkins_home_volume
+    //JENKINS_HOME=/Users/nrazdhan/my_jenkins_home_volume /opt/homebrew/opt/openjdk@21/bin/java -Dmail.smtp.starttls.enable\=true -jar /opt/homebrew/opt/jenkins-lts/libexec/jenkins.war --httpListenAddress\=127.0.0.1 --httpPort\=8080
 }
