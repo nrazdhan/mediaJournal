@@ -26,9 +26,9 @@ node {
         build job: 'helloworldbuild'
     }
 
-    stage('Create docker image') {
-        sh "docker build -t nrazdhan/mediaJournal:latest ."
-    }
+    // stage('Create docker image') {
+    //     sh "docker build -t nrazdhan/mediaJournal:latest ."
+    // }
 
     stage('docker-deploy'){
         withCredentials([usernamePassword(
@@ -36,7 +36,10 @@ node {
             usernameVariable: 'USER',
             passwordVariable: 'PASS')]){
                 sh 'docker login --username $USER --password $PASS'
+                sh "docker build -t nrazdhan/mediaJournal:latest ."
                 sh 'docker push nrazdhan/mediaJouranl'
             }
     }
+
+    // docker run -d --privileged --name my_jenkins -p 8080:8080 -p 50000:50000 -v ~/my_jenkins_home_volume:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock
 }
