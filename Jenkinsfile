@@ -27,7 +27,7 @@ node {
     }
 
     stage('Create docker image') {
-        sh "docker build -t nrazdhan/mediajournal:latest ."
+        sh "docker build --platform linux/amd64 -t nrazdhan/mediajournal:latest ."
     }
 
     stage('docker-deploy'){
