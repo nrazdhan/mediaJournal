@@ -23,11 +23,15 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 import software.amazon.awssdk.services.sts.model.AssumeRoleResponse;
 import software.amazon.awssdk.services.sts.model.Credentials;
+import java.util.List;
+import java.util.ArrayList;
 
 @RestController
 public class helloController {
@@ -114,5 +118,21 @@ public class helloController {
             System.out.println(e.getMessage());
             return null;
         }
+    }
+
+    @GetMapping("/imageNames")
+    public List<String> listFilesInS3Bucket() {
+        List<String> fileNames = new ArrayList<>();
+        try{
+            ListObjectsV2Response res = s3Client.listObjectsV2(
+                ListObjectsV2Request.builder().bucket(s3BucketName).build()
+            );
+            
+            res.contents().stream().sorted((x, y)->y.lastModified().compareTo(x.lastModified())).forEach(x -> fileNames.add(x.key()));
+
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return fileNames;
     }
 }
