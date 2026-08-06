@@ -1,92 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Journal</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body style="background-color: #464e50; margin: 0; padding: 0;">
-    <!--<header style="margin-left: 25%">
-        <h1>Media Journal</h1>
-    </header>-->
-    
-    <div id="file-upload-container" style="margin: 0 auto; width: 50%; font-size: 1.2em; font-weight: bold; font-family: Times New 'Times New Roman', Times, serif; color: #2e2728; background-color: #78a7ce; padding: 0px;">
-        <h1 style="margin: 0 0 10px 0;">Media Journal</h1>
-        <br/>
-        <label style="text-align: right;">Upload new media:</label>
-        <input type="file" id="file-upload" name="file-upload"/>
-        <script src="app.js"></script>
-        <br>
-    </div>
-    <div id="image-container" style="width: 50%; overflow: auto; margin-left: 25%; margin: 0 auto;">
-        <!-- <img src="/image/JediTeam.png" alt="Jedi Team" style="width: 100%">--> 
-    </div>
-    
-    <script>
-        document.getElementById('file-upload').addEventListener('change', async function() {
-            alert("File selected: " + this.files[0].name);
-            try {
-                const form = new FormData();
-                form.append("fileName", this.files[0].name);
-                form.append('file', this.files[0]);
-                alert("Uploading file: " + this.files[0].name);
-                const response = await fetch("/image", {
-                    method: "post",
-                    body: form
-                });
+<html>
+    <head>
+        <title>My Web Page</title>
+        <style>
+            body {
+                background-color: #464e50; margin: 0; padding: 0;
+            }
+            .image-container {
+                width: 70%; overflow: auto; margin: 0 auto;
+            }
+            .image-display, .video-display {
+                margin-top: "2px"; width: "100%"; aspect-ratio: 16 / 9;
+            }
+            .file-upload-container {
+                margin: 0 auto; width: 70%; 
+                font-size: 1.2em; 
+                font-weight: bold; 
+                font-family: Times New 'Times New Roman', Times, serif; 
+                color: #2e2728; 
+                background-color: #78a7ce; 
+                padding: 0px;
+            }
+        </style>
+    </head>
+    <body>
 
-                alert(response.status);
-                if (!response.ok) {
-                    throw new Error("Failed to upload file");
+        <div id="file-upload-container" class="file-upload-container">
+            <h1 style="margin: 0 0 10px 0;">Media Journal</h1>
+            <br/>
+            <label style="text-align: right;">Upload new media:</label>
+            <input type="file" id="file-upload" name="file-upload"/>
+            <script src="app.js"></script>
+            <br>
+        </div>
+
+        <div id="image-gallery" class="image-container">
+
+        </div>
+
+        <script lang=""javascript">document.getElementById('file-upload')
+            .addEventListener('change', async function() {
+                // alert("File selected: " + this.files[0].name);
+                try {
+                    const form = new FormData();
+                    form.append("fileName", this.files[0].name);
+                    form.append('file', this.files[0]);
+                    // alert("Uploading file: " + this.files[0].name);
+                    const response = await fetch("/image", {
+                        method: "post",
+                        body: form
+                    });
+
+                    // alert(response.status);
+                    if (!response.ok) {
+                        throw new Error("Failed to upload file");
+                    }
+
+                    alert("File uploaded successfully: " + this.files[0].name);
+
+                    const result = await response.result;
+                    return result;
+                } catch (error) {
+                    console.error("Error uploading file:", error);
                 }
-
-                alert("File uploaded successfully: " + this.files[0].name);
-
-                const result = await response.result;
-                return result;
-            } catch (error) {
-                console.error("Error uploading file:", error);
-            }
-        });
-
-        async function getImageNames() {
-            try {
-                const response = await fetch("/imageNames");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch image names");
-                }
-                return await response.json();
-            } catch (error) {
-                console.error("Error fetching image names:", error);
-            }
-        }
-
-        async function populateImageContainer() {
-            const imageContainer = document.getElementById("image-container");
-            const fileNames = await getImageNames();
-
-            if (!Array.isArray(fileNames)) {
-                return;
-            }
-
-            fileNames.forEach(fileName => {
-                const img = document.createElement("img");
-                img.style.width = "100%";
-                img.src = "/image/s3/" + fileName;
-                img.alt = fileName;
-                img.style.marginTop = "0px";
-                imageContainer.appendChild(img);
             });
-        }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            populateImageContainer();
-        });
-    </script>
+            async function fetchMediaList() {
+                const gallery = document.getElementById("image-gallery");
+                const response = await fetch("/media/s3");
+                if(!response.ok) {
+                    throw new Error("Failed to fetch media list");
+                }
 
+                const jsonResponse = await response.json();
+                if(!Array.isArray(jsonResponse)) {
+                    throw new Error("Invalid media list format");
+                }
+
+                jsonResponse.forEach(node => {
+                    const arr = node.split(".");
+                    const ext = arr.length > 1 ? arr[arr.length - 1].toLowerCase() : "";
+                    if (ext === "mp4" || ext === "mov" || ext === "webm") {
+                        const vid = document.createElement("video");
+                        vid.src = "/media/s3/video/" + encodeURIComponent(node);
+                        vid.preload = "auto";
+                        vid.controls = true;
+                        vid.className = "video-display"
+                        vid.style.width = "100%";
+                        // vid.style.display = "block";
+                        if (ext === "mp4") {
+                            vid.type = "video/mp4";
+                        } else if (ext === "mov") {
+                            vid.type = "video/quicktime";
+                        } else {
+                            vid.type = "video/webm";
+                        }
+
+                        // const logEvent = (eventName) => {
+                        //     return () => {
+                        //         console.log(`[video] ${eventName}`, {
+                        //             src: vid.src,
+                        //             currentTime: vid.currentTime,
+                        //             buffered: vid.buffered.length ? `${vid.buffered.start(0)}-${vid.buffered.end(0)}` : "none",
+                        //             readyState: vid.readyState,
+                        //             networkState: vid.networkState,
+                        //             paused: vid.paused,
+                        //             duration: vid.duration,
+                        //         });
+                        //     };
+                        // };
+
+                        // vid.addEventListener("loadstart", logEvent("loadstart"));
+                        // vid.addEventListener("progress", logEvent("progress"));
+                        // vid.addEventListener("canplay", logEvent("canplay"));
+                        // vid.addEventListener("canplaythrough", logEvent("canplaythrough"));
+                        // vid.addEventListener("waiting", logEvent("waiting"));
+                        // vid.addEventListener("playing", logEvent("playing"));
+                        // vid.addEventListener("error", logEvent("error"));
+                        // vid.addEventListener("stalled", logEvent("stalled"));
+                        // vid.addEventListener("loadedmetadata", logEvent("loadedmetadata"));
+                        // vid.addEventListener("loadeddata", logEvent("loadeddata"));
+
+                        gallery.appendChild(vid);
+                    } else {
+                        const img = document.createElement("img");
+                        img.src = "/media/s3/" + encodeURIComponent(node);
+                        img.alt = "node";
+                        img.className = "image-display";
+                        img.style.width = "100%";
+                        gallery.appendChild(img);
+                    }
+                });
+            }
+
+            document.addEventListener("DOMContentLoaded", () => fetchMediaList());
+        </script>
+    </body>
     <footer>
         <p>&copy;2025 mediaJournal.razdhan.store</p>
     </footer>
-</body>
 </html>

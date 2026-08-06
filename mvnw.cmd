@@ -79,25 +79,22 @@ if ($env:MVNW_REPOURL) {
 $distributionUrlName = $distributionUrl -replace '^.*/',''
 $distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
 
-$MAVEN_M2_PATH = "$HOME/.m2"
-if ($env:MAVEN_USER_HOME) {
-  $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
+$MAVEN_M2_PATH = if ($env:MAVEN_USER_HOME) { $env:MAVEN_USER_HOME } else { Join-Path $HOME '.m2' }
+
+try {
+  $resolvedMavenHome = [System.IO.Path]::GetFullPath($MAVEN_M2_PATH)
+  if (-not (Test-Path -LiteralPath $resolvedMavenHome -PathType Container)) {
+    New-Item -ItemType Directory -Path $resolvedMavenHome -Force | Out-Null
+  }
+  $MAVEN_M2_PATH = $resolvedMavenHome
+} catch {
+  Write-Error "Could not prepare Maven user home at $MAVEN_M2_PATH"
 }
 
-if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
-    New-Item -Path $MAVEN_M2_PATH -ItemType Directory | Out-Null
-}
-
-$MAVEN_WRAPPER_DISTS = $null
-if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
-  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
-} else {
-  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
-}
-
-$MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"
+$MAVEN_WRAPPER_DISTS = Join-Path $MAVEN_M2_PATH 'wrapper/dists'
+$MAVEN_HOME_PARENT = Join-Path $MAVEN_WRAPPER_DISTS $distributionUrlNameMain
 $MAVEN_HOME_NAME = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
-$MAVEN_HOME = "$MAVEN_HOME_PARENT/$MAVEN_HOME_NAME"
+$MAVEN_HOME = Join-Path $MAVEN_HOME_PARENT $MAVEN_HOME_NAME
 
 if (Test-Path -Path "$MAVEN_HOME" -PathType Container) {
   Write-Verbose "found existing MAVEN_HOME at $MAVEN_HOME"

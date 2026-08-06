@@ -1,10 +1,10 @@
-package com.example.mediaJournal;
+package store.razdhan.mediajournal;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MediaJournalApplicationTests {
+class MediajournalApplicationTests {
 
 	@Test
 	void contextLoads() {
