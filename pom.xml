@@ -47,6 +47,46 @@
 			<artifactId>s3</artifactId>
 			<version>${aws.sdk.version}</version>
 		</dependency>
+
+		<!-- We do not need this as we are now adding 
+		SB security starter because we need to use not just crypto
+		for password and jwt signing etc. We also need 
+		1. UsernamePasswordAuthenticationToken 
+		2. @PreAuthorize
+		3. SimpleGantedAuthority
+		4. SecurityContextHolder
+		We could just parse the claims, put them HttpServletRequest 
+		and use them in every method, but read back from request will require
+		different signature for every method, one that accepts HttpServletRequest
+		instead of more fluent @RequestParam etc.
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+		-->
+
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

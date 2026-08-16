@@ -35,6 +35,7 @@ import java.io.FileNotFoundException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -68,6 +69,7 @@ public class MediaController {
     }
 
     //NOT USED IN APP, BUT CAN BE CALLED
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @GetMapping("/image/local/{name}")
     public byte[] getLocalImage(@PathVariable String name) {
         try{
@@ -89,6 +91,7 @@ public class MediaController {
 
     // @GetMapping(value="/image/s3/{name}", produces=MediaType.IMAGE_PNG_VALUE)
     // public byte[] getImageFromS3(@PathVariable String name) {
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @GetMapping("/media/s3/{key}")
     public org.springframework.core.io.Resource getImage(@PathVariable String key) {
         ResponseInputStream<GetObjectResponse> responseStream = s3Client.getObject(
@@ -103,6 +106,7 @@ public class MediaController {
         return new org.springframework.core.io.InputStreamResource(responseStream);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @GetMapping("/media/s3/video/{key}")
     public void getVideo(@PathVariable String key, HttpServletRequest request, HttpServletResponse response) {
         StreamingMedia streamingMedia = mediaService.getMedia(key, request, response);
