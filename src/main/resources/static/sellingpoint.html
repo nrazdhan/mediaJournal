@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>razdhan.store</title>
+        <script src="https://razorpay.com" onload="initPaymentGateway()"></script>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <style>
+            body{
+                font-family: Arial, Helvetica, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                height: 100vh;
+                overflow-y: auto;
+                background-color: #f4f7f6;
+                margin: 0;
+            }
+            .payment-card {
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0,1);
+                text-align: center;
+                max-width: 400px;
+                width: 100%;
+            }
+            button {
+                background-color: #3399cc;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                font-size: 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                width: 50%;
+                margin-top: 20px;
+                transition: background 0.2s;
+            }
+            button:hover {
+                background-color: #287a9e;
+            }
+            .price-display {
+                width: 45%;
+                text-align: right;
+                border: none;
+                height: 100%;
+                font-size: 20px;
+                background-color: #f4f7f6;
+                color: #610d0d;
+                font-weight: 700;
+                font-style: italic;
+                letter-spacing: 0.5px;  
+                outline: none; 
+                font-family: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;' /* High-quality premium font stack */
+            }
+            .status {
+                margin-top: 15px;
+                font-weight: bold;  
+            }
+            .video-display {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 9 / 16;
+                object-fit: cover;
+                display: block;
+            }
+            .image-container {
+                width: min(70%, 100vh);
+                margin: 0 auto;
+                box-sizing: border-box;
+                padding: 0 1px 1px;
+                /* border: 1px solid #ccc; */
+            }
+            .image-container table {
+                width: 100%;
+                table-layout: fixed;
+                margin-top: 0;
+            }
+            .image-container > h2 {
+                margin: 1px 0 0px;
+            }
+            .image-container td {
+                width: 50%;
+                vertical-align: top;
+                padding: 2px;
+            }
+            .video-div-tag {
+                width: 100%;
+                height: auto;
+            }
+            .video-div-tag button {
+                box-sizing: border-box;
+                margin-top: 0;
+            }
+            .color-select {
+                width: 100%;
+                box-sizing: border-box;
+                margin: 8px 0;
+                padding: 8px;
+                font-size: 14px;
+            }
+            @media (max-width: 600px) {
+                .image-container {
+                    width: min(100%, 80vh);
+                }
+            }
+
+        </style>
+        <style>
+            .color-slider-wrapper {
+                width: 100%;
+                margin-top: 1px;
+                overflow: hidden;
+            }
+            .product-options {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                margin: 1px 0;
+            }
+            .product-options .color-slider-wrapper {
+                flex: 1;
+            }
+            .size-options {
+                display: flex;
+                align-items: center;
+                gap: 3px;
+                flex-shrink: 0;
+            }
+            .size-option {
+                appearance: none;
+                -webkit-appearance: none;
+                width: 22px;
+                height: 22px;
+                border: 1px solid #999;
+                border-radius: 4px;
+                background: #fff;
+                color: #333;
+                cursor: pointer;
+                position: relative;
+            }
+            .size-option::after {
+                content: attr(aria-label);
+                position: absolute;
+                inset: 0;
+                display: grid;
+                place-items: center;
+                font-size: 11px;
+                font-weight: bold;
+            }
+            .size-option:checked {
+                background: #333;
+                border-color: #333;
+                color: #fff;
+            }
+            .color-slider {
+                display: flex;
+                gap: 1px;
+                overflow-x: auto;
+                padding: 0px 0px;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+            }
+            .color-slider::-webkit-scrollbar {
+                display: none;
+            }
+
+            .color-dot {
+                 appearance: none; /* Removes the ugly standard browser radio dot */
+                -webkit-appearance: none;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: inset 0 0 0 2px rgba(0,0,0,0.1); /* Subtle inner edge */
+                transition: all 0.2s ease;
+                margin-bottom: 2px;
+
+                /* width: 1px;
+                height: 1px;
+                border-radius: 10%;
+                border: 2px solid #ccc;
+                flex-shrink: 0;
+                cursor: pointer;
+                transition: transform 0.2s ease, border-color 0.2s ease; */
+            }
+            .color-dot:checked {
+                transform: scale(0.85); /* Physically shrinks down to look pressed */
+                box-shadow: 0 0 0 3px #333; /* Adds a heavy, dark "selected" ring around it */
+            }
+            .color-dot:active {
+                transform: scale(2.0);
+            }
+            .red { background-color: #af3232; }
+            .blue { background-color: #2984e6; }
+            .white { background-color: #ffffff; border-color: #999; }
+            .green { background-color: #2fa148; }
+            .yellow { background-color: #ffc107; }
+            .purple { background-color: #6f42c1; }
+            .black { background-color: #000000; }
+        </style>
+        <style>
+            .checkout-form {
+                width: 50%;
+                margin-top: 50px;
+            }
+            .checkout-form input {
+                width: 100%;
+                height: 30px;
+                font-size: 20px;
+
+            }
+            #success-screen {
+                width: min(90%, 460px);
+                margin: 12vh auto 0;
+                padding: 42px 32px 36px;
+                box-sizing: border-box;
+                text-align: center;
+                background: #ffffff;
+                border: 1px solid #dce8e3;
+                border-radius: 16px;
+                box-shadow: 0 18px 45px rgba(34, 74, 59, 0.14);
+            }
+            .success-mark {
+                width: 68px;
+                height: 68px;
+                margin: 0 auto 20px;
+                display: grid;
+                place-items: center;
+                border-radius: 50%;
+                background: #e3f5e9;
+                color: #238447;
+                font-size: 16px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+            #success-screen h2 {
+                margin: 0;
+                color: #1d3b2d;
+                font-size: 28px;
+            }
+            #success-screen p {
+                margin: 12px 0 26px;
+                color: #607168;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+            #success-screen .success-button {
+                width: 100%;
+                margin-top: 0;
+                background: #238447;
+            }
+            #success-screen .success-button:hover {
+                background: #1b6d39;
+            }
+            @media (max-width: 600px) {
+                #success-screen {
+                    margin-top: 8vh;
+                    padding: 34px 22px 28px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- <div class="payment-card">
+            <h2>Complete payment</h2>
+            <p>Product: Premium Subscription</p>
+            <p>Amount: <strong>Rs 1.00</strong></p>
+            <button id="pay-btn" name="pay-btn">Pay Now</button>
+        </div> -->
+
+        <!-- 1. The Sales Showcase -->
+        <div id="selling-point" class="image-container" border="2">
+            <h2>razdhan.store</h2>
+            <table>
+                <tr>
+                    <td><div class="video-div-tag">
+                        <video class="video-display" preload="auto" controls autoplay muted loop playsinline>
+                            <source src="/images/productKurta.mov" type="video/mp4">
+                            Not supported
+                        </video>
+                        <div class="product-options">
+                        <div class="color-slider-wrapper">
+                            <div class="color-slider">
+                                <input type="radio" name="color-choice-1" class="color-dot red" checked>
+                            </div>
+                        </div>
+                        <div class="size-options" role="group" aria-label="Select size">
+                            <input type="radio" name="size-choice-1" class="size-option" aria-label="S" value="S" checked>
+                            <input type="radio" name="size-choice-1" class="size-option" aria-label="M" value="M">
+                            <input type="radio" name="size-choice-1" class="size-option" aria-label="L" value="L">
+                        </div>
+                        </div>
+                        <button id="k1" onclick="buyProduct(this)">Buy Now</button>
+                        <input type="label" class="price-display" value="₹5000.00" readonly>
+                    </div></td>
+                    <td><div class="video-div-tag">
+                        <video class="video-display" preload="auto" controls autoplay muted loop playsinline>
+                            <source src="/images/productTshirt.mov" type="video/mp4">
+                            Not supported
+                        </video>
+                        
+                        <div class="product-options">
+                        <div class="color-slider-wrapper">
+                            <div class="color-slider">
+                                <input type="radio" name="color-choice-2" class="color-dot red" checked>
+                                <input type="radio" name="color-choice-2" class="color-dot blue">
+                                <input type="radio" name="color-choice-2" class="color-dot green">
+                                <input type="radio" name="color-choice-2" class="color-dot black">
+                                <input type="radio" name="color-choice-2" class="color-dot white">
+                            </div>
+                            <!-- <div class="color-slider">
+                                <button class="color-dot red" onclick="changeColor('red')"></button>
+                                <button class="color-dot green" onclick="changeColor('green')"></button>
+                                <button class="color-dot blue" onclick="changeColor('blue')"></button>
+                                <button class="color-dot black" onclick="changeColor('black')"></button>
+                                <button class="color-dot white" onclick="changeColor('white')"></button>
+                            </div> -->
+                        </div>
+                        <div class="size-options" role="group" aria-label="Select size">
+                            <input type="radio" name="size-choice-2" class="size-option" aria-label="S" value="S" checked>
+                            <input type="radio" name="size-choice-2" class="size-option" aria-label="M" value="M">
+                            <input type="radio" name="size-choice-2" class="size-option" aria-label="L" value="L">
+                        </div>
+                        </div>
+                        <button id="t1" onclick="buyProduct(this)">Buy Now</button>
+                        <input type="label" class="price-display" value="₹2000.00" readonly>
+                    </div></td>
+                </tr>
+                <tr>
+                    <td><div class="video-div-tag">
+                        <video class="video-display" preload="auto" controls autoplay muted loop playsinline>
+                            <source src="/images/productKurta.mov" type="video/mp4">
+                            Not supported
+                        </video>
+                        <div class="product-options">
+                        <div class="color-slider-wrapper">
+                            <div class="color-slider">
+                                <input type="radio" name="color-choice-3" class="color-dot red" checked>
+                            </div>
+                        </div>
+                        <div class="size-options" role="group" aria-label="Select size">
+                            <input type="radio" name="size-choice-3" class="size-option" aria-label="S" value="S" checked>
+                            <input type="radio" name="size-choice-3" class="size-option" aria-label="M" value="M">
+                            <input type="radio" name="size-choice-3" class="size-option" aria-label="L" value="L">
+                        </div>
+                        </div>
+                        <button onclick="buyProduct(this)">Buy Now</button>
+                        <input type="label" class="price-display" value="₹5000.00" readonly>
+                    </div></td>
+                    <td><div class="video-div-tag">
+                        <video class="video-display" preload="auto" controls autoplay muted loop playsinline>
+                            <source src="/images/productTshirt.mov" type="video/mp4">
+                            Not supported
+                        </video>
+                        
+                        <div class="product-options">
+                        <div class="color-slider-wrapper">
+                            <div class="color-slider">
+                                <input type="radio" name="color-choice-4" class="color-dot red" checked>
+                                <input type="radio" name="color-choice-4" class="color-dot blue">
+                                <input type="radio" name="color-choice-4" class="color-dot green">
+                                <input type="radio" name="color-choice-4" class="color-dot black">
+                                <input type="radio" name="color-choice-4" class="color-dot white">
+                            </div>
+                        </div>
+                        <div class="size-options" role="group" aria-label="Select size">
+                            <input type="radio" name="size-choice-4" class="size-option" aria-label="S" value="S" checked>
+                            <input type="radio" name="size-choice-4" class="size-option" aria-label="M" value="M">
+                            <input type="radio" name="size-choice-4" class="size-option" aria-label="L" value="L">
+                        </div>
+                        </div>
+                        <button onclick="buyProduct(this)">Buy Now</button>
+                        <input type="label" class="price-display" value="₹2000.00" readonly>
+                    </div></td>
+                </tr>
+                <tr>
+                    <td><div class="video-div-tag">
+                        <video class="video-display" preload="auto" controls autoplay muted loop playsinline>
+                            <source src="/images/productKurta.mov" type="video/mp4">
+                            Not supported
+                        </video>
+                        <div class="product-options">
+                        <div class="color-slider-wrapper">
+                            <div class="color-slider">
+                                <input type="radio" name="color-choice-5" class="color-dot red" checked>
+                            </div>
+                        </div>
+                        <div class="size-options" role="group" aria-label="Select size">
+                            <input type="radio" name="size-choice-5" class="size-option" aria-label="S" value="S" checked>
+                            <input type="radio" name="size-choice-5" class="size-option" aria-label="M" value="M">
+                            <input type="radio" name="size-choice-5" class="size-option" aria-label="L" value="L">
+                        </div>
+                        </div>
+                        <button onclick="buyProduct(this)">Buy Now</button>
+                        <input type="label" class="price-display" value="₹5000.00" readonly>
+                    </div></td>
+                    <td><div class="video-div-tag">
+                        <video class="video-display" preload="auto" controls autoplay muted loop playsinline>
+                            <source src="/images/productTshirt.mov" type="video/mp4">
+                            Not supported
+                        </video>
+                        
+                        <div class="product-options">
+                        <div class="color-slider-wrapper">
+                            <div class="color-slider">
+                                <input type="radio" name="color-choice-6" class="color-dot red" checked>
+                                <input type="radio" name="color-choice-6" class="color-dot blue">
+                                <input type="radio" name="color-choice-6" class="color-dot green">
+                                <input type="radio" name="color-choice-6" class="color-dot black">
+                                <input type="radio" name="color-choice-6" class="color-dot white">
+                            </div>
+                        </div>
+                        <div class="size-options" role="group" aria-label="Select size">
+                            <input type="radio" name="size-choice-6" class="size-option" aria-label="S" value="S" checked>
+                            <input type="radio" name="size-choice-6" class="size-option" aria-label="M" value="M">
+                            <input type="radio" name="size-choice-6" class="size-option" aria-label="L" value="L">
+                        </div>
+                        </div>
+                        <button onclick="buyProduct(this)">Buy Now</button>
+                        <input type="label" class="price-display" value="₹2000.00" readonly>
+                    </div></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- 2. The Customer Details Form (Initially Hidden) -->
+        <div id="checkout-form-div" class="checkout-form" style="display: none;">
+            <h3>Please enter your details</h3>
+            <form  id="checkout-form-details" onsubmit="return processOrderCreation(event)">
+                <input type="text" id="fullName" placeholder="full name" required><br>
+                <input type="text" id="phone" placeholder="phone" required><br>
+                <input type="text" id="email" placeholder="email" required><br>
+                <input type="text" id="addressLine1" placeholder="address line1" required><br>
+                <input type="text" id="addressLine2" placeholder="address line2"><br>
+                <input type="text" id="city" placeholder="city" required><br>
+                <input type="text" id="state" placeholder="state" required><br>
+                <input type="text" id="zipCode" placeholder="zipcode" required><br>
+                <input type="text" id="country" placeholder="country" required><br>
+                <button type="submit">Proceed to Payment</button>
+            </form>
+        </div>
+
+        <!-- 3. The Embedded Razorpay Container (Initially Hidden) -->
+        <div id="payment-container" style="display: none;">
+            <h3>Complete your Payment</h3>
+
+            <!-- Razorpay will inject its secure checkout iframe right here -->
+            <div id="razorpay-embed-holder" style="height: 500px; width: 100%"></div>
+        </div>
+
+        <!-- 4. The Success Confirmation Screen (Initially Hidden) -->
+        <div id="success-screen" style="display: none;">
+            <div class="success-mark" aria-hidden="true">OK</div>
+            <h2 id="status-message">Payment Successful!</h2>
+            <p>Your order has been placed. Thank you!</p>
+            <button class="success-button" onclick="returnToSellingPoint()">Back to Shop</button>
+        </div>
+
+        <script>
+            const RAZORPAY_KEY_ID = "rzp_test_TVAru2oomiEBEz";
+            let selectedProductId=null;
+            let selectedColor=null;
+            let selectedSize=null;
+
+            function buyProduct(button){
+                const productCard = button.closest(".video-div-tag");
+                const selectedColorOption = productCard.querySelector(".color-dot:checked");
+                const selectedSizeOption = productCard.querySelector(".size-option:checked");
+                const id = button.id; // Get the ID of the clicked button
+                showCheckoutForm(id, selectedColorOption?.classList[1] || null, selectedSizeOption?.value || null);
+            }
+
+            //step 2a: user clicks buy now
+            function showCheckoutForm(productId, color, size){
+                selectedProductId=productId;
+                selectedColor=color;
+                selectedSize=size;
+                document.getElementById("selling-point").style.display="none";
+                document.getElementById("checkout-form-div").style.display="block";
+            }
+
+            async function processOrderCreation(event){
+
+                event.preventDefault(); // Prevent the form from submitting normally
+
+                const submitButton = document.querySelector("#checkout-form-details button");
+                submitButton.disabled = true;
+                submitButton.textContent = "Processing...";
+
+                try {
+                    const customerData = {
+                        "productId": selectedProductId,
+                        "color": selectedColor,
+                        "size": selectedSize,
+                        "fullName": document.getElementById("fullName").value,
+                        "email": document.getElementById("email").value,
+                        "phone": document.getElementById("phone").value,
+                        "addressLine1": document.getElementById("addressLine1").value,
+                        "addressLine2": document.getElementById("addressLine2").value,
+                        "city": document.getElementById("city").value,
+                        "state": document.getElementById("state").value,
+                        "zipCode": document.getElementById("zipCode").value,
+                        "country": document.getElementById("country").value
+                    }
+
+                    const orderResponse = await fetch("/create-order",
+                        {
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "method": "POST",
+                            "body": JSON.stringify(customerData)
+                        }
+                    );
+
+                    const orderData = await orderResponse.json();
+
+                    if(!orderResponse.ok){
+                        switch(orderResponse.status) {
+                            case 400:
+                                throw new Error(orderData.error || "Bad Request");
+                                break;
+                            case 403:
+                                throw new Error("You are not authrorized to create order");
+                                break;
+                            case 500:
+                                throw new Error("Seomthing went wrong on the server. Please try again later.");
+                                break;
+                            default:
+                                throw new Error(orderData.error || "unknown error occurred while creating order");
+                                break;
+                        }
+                    }
+                    initializeEmbeddedPayment(orderData, customerData);
+                } catch(error) {
+                    alert("Error creating order: " + error.message);
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = "Proceed to Payment";
+                }
+            }
+
+            function initializeEmbeddedPayment(orderData, orderRequest){
+
+                document.getElementById('checkout-form-div').style.display = 'none';
+                document.getElementById('payment-container').style.display = 'block';
+    
+                const options = {
+                    "name": "razdhan.store",
+                    "description": "Testing Razor Pay",
+                    "order_id": orderData.id,
+                    "amount": orderData.amount,
+                    "currency": orderData.currency,
+                    "key": RAZORPAY_KEY_ID,
+
+                    // CRUCIAL FOR EMBEDDING: Tell Razorpay where to inject the UI
+                    "container": "#razorpay-embed-holder", 
+
+                    "handler": async function(paymentResponse){
+                        const paymentId = paymentResponse.razorpay_payment_id;
+                        const orderId = paymentResponse.razorpay_order_id;
+                        const signature = paymentResponse.razorpay_signature;
+
+                        // statusMsg.innerText = "Verifying payment security...";
+
+                        //3. Verify payment 
+                        const verifyResponse = await fetch("/verify-payment", {
+                            "method": "POST",
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "body": JSON.stringify({
+                                "paymentId": paymentId,
+                                "orderId": orderId,
+                                "signature": signature
+                            })
+                        });
+
+                        const verifyData = await verifyResponse.json();
+
+                        if(verifyResponse.ok && verifyData.status==="success"){
+                            document.getElementById("payment-container").style.display="none";
+                            document.getElementById("success-screen").style.display="block";
+                            const eres = await sendEmail(orderData, orderRequest, paymentId);
+                            const eresjson = eres.json();
+                        } else {
+                            // statusMsg.style.color = "red";
+                            // statusMsg.innerText = "Payment verification failed";
+                            alert("Error:" + verifyData.message);
+                        }
+                    },
+                    "prefill": {
+                        "name": document.getElementById("fullName").value,
+                        "email": document.getElementById("email").value,
+                        "phone": document.getElementById("phone").value
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    },
+                    "modal": {
+                        "ondismiss": function() {
+                            statusMsg.style.color="orange";
+                            statusMsg.innerText = "Payment cancelled by user";
+                        }
+                    }
+                }
+
+                //4. Open razorpay checkout interfaces
+                const razorPay = new Razorpay(options);
+                razorPay.open();
+            }
+
+            async function sendEmail(orderData, orderRequest, paymentId) {
+                try{
+                    const emailData = {
+                        "orderRequest": orderRequest,
+                        "orderId": orderData.id,
+                        "paymentId": paymentId,
+                        "amountInPaise": orderData.amount,
+                        "currency": orderData.currency
+                    }
+                    const emailResponse = await fetch("/email-order-confirmation", {
+                        "method": "POST",
+                        "headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": JSON.stringify(emailData)
+                    });
+                    const emailResponseJson = await emailResponse.json();
+                } catch(error) {
+                    // swallow the exception, will need manual intervention by checking db for unconfirmed email sends.
+                }
+            }
+
+            function returnToSellingPoint(){
+                document.getElementById("success-screen").style.display="none";
+                document.getElementById("selling-point").style.display="block";
+
+                //Clear the customer detail fields
+                document.getElementById("fullName").value="";
+                document.getElementById("addressLine1").value="";
+                document.getElementById("addressLine2").value="";
+                document.getElementById("city").value="";
+                document.getElementById("state").value="";
+                document.getElementById("zipCode").value="";
+                document.getElementById("phone").value="";
+                document.getElementById("email").value="";
+            }
+
+            function changeColor(color) {
+                alert("Selected color:" + color);
+            }
+        </script>
+    </body>
+</html>

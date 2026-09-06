@@ -32,7 +32,12 @@ public class JwtFilter extends OncePerRequestFilter{
         String uri = request.getRequestURI();
         if (uri.equals("/login") ||
             uri.equals("/login.html") ||
+            uri.equals("/sellingpoint.html") ||
+            uri.equals("/email-order-confirmation") ||
             uri.equals("/") ||
+            uri.equals("/create-order") ||
+            uri.equals("/verify-payment") ||
+            uri.equals("/error") ||
             uri.startsWith("/css/") ||
             uri.startsWith("/js/") ||
             uri.startsWith("/images/")) {

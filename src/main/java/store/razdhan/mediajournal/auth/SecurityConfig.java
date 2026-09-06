@@ -3,7 +3,6 @@ package store.razdhan.mediajournal.auth;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import store.razdhan.mediajournal.filter.JwtFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,9 +26,10 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login.html", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/login.html", "/sellingpoint.html", "/email-order-confirmation", "/login", "/error", "/create-order", "/verify-payment", "/css/**", "/js/**", "/images/**").permitAll()
                 .anyRequest().authenticated()
             )
+            .anonymous(anonymous -> anonymous.principal("anonymousUser").authorities("ROLE_ANONYMOUS"))
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
